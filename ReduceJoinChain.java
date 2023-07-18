@@ -21,6 +21,7 @@ public class ReduceJoinChain {
         private static double avgMin = 0.0;
         private static List<String> gameTypesAvgMin = new ArrayList<String>();
 
+        // Có thể đổi tên hàm CustsMapper         
         public static class CustsMapper extends Mapper <Object, Text, Text, Text> {
                 public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
                         String record = value.toString();
@@ -29,6 +30,7 @@ public class ReduceJoinChain {
                 }
         }
 
+        // Có thể đổi tên hàm TxnsMapper
         public static class TxnsMapper extends Mapper <Object, Text, Text, Text> {
                 public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
                         String record = value.toString();
@@ -37,6 +39,7 @@ public class ReduceJoinChain {
                 }
         }
 
+        // Có thể đổi tên hàm ReduceJoinReducer
         public static class ReduceJoinReducer extends Reducer <Text, Text, Text, Text> {
                 public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
                         String age = "";
@@ -53,8 +56,20 @@ public class ReduceJoinChain {
                 }
         }
 
-        public static class GameTypeStatReducer extends Reducer <Text, Text, Text, Text> {
+        // Có thể đổi tên hàm GameTypeStatMapper
+        public static class GameTypeStatMapper extends Mapper <Object, Text, Text, Text> {
+                public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+                        String record = value.toString();
+                        String[] parts = record.split("        ");
+                        String[] types = parts[1].split(",");
+                        for (String type : types) {
+                                context.write(new Text(type.toString().trim()), new Text(parts[0].toString()));
+                        }
+                }
+        }
 
+        // Có thể đổi tên hàm GameTypeStatReducer
+        public static class GameTypeStatReducer extends Reducer <Text, Text, Text, Text> {
                 public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
                         int count = 0;
                         int min = 0;
@@ -104,17 +119,6 @@ public class ReduceJoinChain {
                                 }
                         }
                         context.write(new Text("Game Types with lowest average age of "), new Text(String.format("%.1f: %s", avgMin, StringUtils.join(types, ", "))));
-                }
-        }
-
-        public static class GameTypeStatMapper extends Mapper <Object, Text, Text, Text> {
-                public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-                        String record = value.toString();
-                        String[] parts = record.split("        ");
-                        String[] types = parts[1].split(",");
-                        for (String type : types) {
-                                context.write(new Text(type.toString().trim()), new Text(parts[0].toString()));
-                        }
                 }
         }
 
