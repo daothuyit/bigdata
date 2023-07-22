@@ -16,6 +16,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class Assignment1 {
 
+        private static String maxMonth = "";
+        private static double maxCost = 0.0;
+
         public static class Trans1Mapper extends Mapper <Object, Text, Text, Text> {
                  public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
                          String record = value.toString();
@@ -43,7 +46,8 @@ public class Assignment1 {
          }
 
         public static class ReduceJoinReducer extends Reducer <Text, Text, Text, Text> {
-                 public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+
+                public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
                          double total = 0.0;
                          List<String> ids = new ArrayList<String>();
                          for (Text t : values) {
@@ -60,7 +64,18 @@ public class Assignment1 {
                                  }
                          }
 
+                         if (maxMonth == "" || total > maxCost) {
+                                 maxCost = total;
+                                 maxMonth = key.toString();
+                         }
+
                          context.write(key, new Text(String.format("%d   %f", ids.size(), total)));
+                 }
+
+                 @Override
+                 protected void cleanup(Context context) throws IOException, InterruptedException {
+                         context.write(new Text(String.format("%s is the month with highest cost", maxMonth)), new Text(String.format("(%f)", maxCost)));
+
                  }
          }
 
